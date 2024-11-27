@@ -1,4 +1,4 @@
-data {
+••••••••••••••••••••••••••••••••••••••••••••••••data {
   int<lower=0> N; // Number of age groups
   int<lower=0> Y; // Number of years
   matrix[N, Y] accidentData; // Accident rate data for age groups over years
