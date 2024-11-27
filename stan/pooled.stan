@@ -1,53 +1,44 @@
 data {
-  int<lower=0> N; // age group
-  int<lower=0> Y; // year
-  matrix[N,Y] accidentData;//accident data
-  int xpred;
+  int<lower=0> N; // Number of age groups
+  int<lower=0> Y; // Number of years
+  matrix[N, Y] accidentData; // Accident rate data for age groups over years
+  int xpred; // Year for prediction (e.g., 2000)
 }
-
 
 parameters {
-  real alpha;
-  real beta;
-  real<lower=0> sigma;
+  real alpha;        // Global intercept
+  real beta;         // Global slope
+  real<lower=0> sigma; // Global noise
 }
 
-transformed parameters{
-  vector[Y]mu;
-  //linear model
-  for(j in 1:Y)
-    mu[j]=alpha+beta*j;
+transformed parameters {
+  matrix[N, Y] mu; // Mean accident rates for all groups and years
+  for (i in 1:N)
+    for (j in 1:Y)
+      mu[i, j] = alpha + beta * (j - 1); // Time starts at year 1
 }
-
 
 model {
+  // Priors for alpha, beta, and sigma
+  alpha ~ normal(0, 10);    // Prior for the global intercept
+  beta ~ normal(0, 5);      // Prior for the global slope
+  sigma ~ cauchy(0, 2);     // Prior for the global standard deviation
 
-    alpha~normal(0,100);
-    beta~normal(0,10);
-
-  for(j in 1:Y){
-    accidentData[,j]~normal(mu[j],sigma);
-  }
+  // Likelihood for the observed data
+  for (i in 1:N)
+    for (j in 1:Y)
+      accidentData[i, j] ~ normal(mu[i, j], sigma);
 }
 
-generated quantities{
-  //log likelihood
-  matrix[N,Y] log_lik;
-  matrix[N,Y] yrep;
-  //accident prediction in 2020 in different police force
-  vector[N] pred;
-  for(i in 1:N){
-    // 2005 -> 1, 2006 -> 2, ..., 2020 -> 16 
-    pred[i]=normal_rng(alpha+beta*(xpred-2004),sigma);
+generated quantities {
+  matrix[N, Y] yrep;  // Posterior predictive replicated data
+  vector[N] pred;     // Predictions for the specified year `xpred`
+  for (i in 1:N) {
+    // Predict accident rates for year `xpred`
+    pred[i] = normal_rng(alpha + beta * (xpred - 1999), sigma);
+    
+    // Generate replicated data
+    for (j in 1:Y)
+      yrep[i, j] = normal_rng(mu[i, j], sigma);
   }
-  
-  for(i in 1:N){
-    for(j in 1:Y){
-      // do posterior sampling and try to reproduce the original data
-      yrep[i,j]=normal_rng(mu[j],sigma);
-      // prepare log likelihood for PSIS-LOO 
-      log_lik[i,j]=normal_lpdf(accidentData[i,j]|mu[j],sigma);
-    }
-  }
-  
 }
