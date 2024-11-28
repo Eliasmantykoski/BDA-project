@@ -20,7 +20,7 @@ transformed parameters {
 
 model {
   // Priors for alpha, beta, and sigma
-  alpha ~ normal(0, 10);       // Prior for intercepts
+  alpha ~ normal(1.5, 10);       // Prior for intercepts
   beta ~ normal(0, 5);         // Prior for slopes
   sigma ~ cauchy(0, 2);        // Prior for standard deviations
 

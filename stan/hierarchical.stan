@@ -27,7 +27,7 @@ transformed parameters {
 
 model {
   // Priors for group-level parameters
-  mu_alpha ~ normal(0, 10);     // Prior for mean intercept
+  mu_alpha ~ normal(1.5, 10);     // Prior for mean intercept
   mu_beta ~ normal(0, 5);       // Prior for mean slope
   sigma_alpha ~ cauchy(0, 2);   // Prior for SD of intercepts
   sigma_beta ~ cauchy(0, 2);    // Prior for SD of slopes
