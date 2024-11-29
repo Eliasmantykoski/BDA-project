@@ -46,13 +46,16 @@ model {
 generated quantities {
   matrix[N, Y] yrep;  // Posterior predictive replicated data
   vector[N] pred;     // Predictions for the specified year `xpred`
+  matrix[N, Y] log_lik;
   
   for (i in 1:N) {
     // Predict accident rates for year `xpred`
     pred[i] = normal_rng(alpha[i] + beta[i] * (xpred - 1999), sigma);
     
     // Generate replicated data
-    for (j in 1:Y)
+    for (j in 1:Y){
       yrep[i, j] = normal_rng(mu[i, j], sigma);
+      log_lik[i, j] = normal_lpdf(accidentData[i, j] | mu[i, j], sigma);
+      }
   }
 }
